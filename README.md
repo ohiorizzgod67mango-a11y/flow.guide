@@ -1,4 +1,4 @@
-# flow assist v0.1.0 source alpha
+# flow assist v0.1.1 source alpha
 
 macro guided input assistance for geometry dash practice
 
@@ -13,15 +13,33 @@ macro guided input assistance for geometry dash practice
 - assistance only runs in practice mode, normal mode inputs pass through
 - a visible label shows whether assistance is active and counts early corrections
 
+## pause menu gui
+
+pause a level and click flow
+
+choose macro opens the native file picker, successful loads are remembered
+
+invalid files show an error and keep your previous macro
+
+use toggle to enable or disable assistance, plus and minus adjust the 0 to 6 frame window
+
+macro offset controls move the target timeline in 5 ms steps, zero offset restores the default
+
+loading a different macro clears pending events and requires restarting the attempt before assistance becomes active, use the normal restart control after closing the popup
+
+changing the toggle, window or offset clears pending inputs and releases buttons to prevent old queued actions carrying over
+
+the popup shows the loaded filename, effective early window in milliseconds and current offset
+
 ## first use after building
 
-1 choose a macro in the mod settings before entering a level
-2 leave the early window at 3 frames
-3 enter the matching level and switch to practice mode
+1 enter a level, pause and click flow
+2 choose a matching macro and leave the early window at 3 frames
+3 close the popup, switch to practice mode and restart the attempt
 4 play normally, start with clicks slightly early rather than late
 5 try 1 frame for lighter assistance or 6 for a wider window
 
-reenter the level after changing the macro file
+the pause menu picker loads in the current level, changes made through the separate geode settings file control still require reentering the level
 
 frames mean macro frames, not monitor refresh frames
 
@@ -33,7 +51,9 @@ this is source code, not an installable geode package
 
 the standalone timing engine was compiled locally with address and undefined behaviour sanitizers and tested against deterministic checks and 5000 randomized sequences
 
-the geode adapter has not been compiled or tested in gd, the included windows workflow is the next build gate, a successful build still needs in game testing
+the v0.1.0 adapter compiled and loaded in gd according to your report, timing assistance is not yet verified in game
+
+the new v0.1.1 gui has not been compiled or tested in gd, the included windows workflow is the next build gate
 
 windows gd 2.2081 and geode 5.8.2 are the only declared target for this alpha
 
@@ -77,6 +97,12 @@ python3 tools/check-comments.py
 
 ## required in game checks before sharing a binary
 
+- flow button appears in the pause menu and popup fits the screen
+- file picker cancel leaves the current macro unchanged
+- invalid file shows an error and preserves the current macro
+- successful load shows the filename, restart requirement and correct macro frame window
+- toggling, changing frame window and changing offset release held buttons without firing old queued inputs
+- closing the popup before the picker completes does not access a freed popup
 - normal mode never buffers inputs
 - assistance indicator matches actual practice state
 - early press and early release each land on the intended simulation tick

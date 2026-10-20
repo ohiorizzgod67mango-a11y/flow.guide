@@ -2,6 +2,8 @@
 
 #include "engine/TimingAssist.hpp"
 #include <Geode/Geode.hpp>
+#include <filesystem>
+#include <string>
 
 namespace flow {
 
@@ -11,6 +13,10 @@ public:
     void attach(PlayLayer* layer);
     void reset(PlayLayer* layer);
     void detach();
+    std::string loadMacro(std::filesystem::path const& path, bool requireRestart = true);
+    std::string description() const;
+    double tickRate() const;
+    void cancelPending();
     void tick(PlayLayer* layer);
     bool input(PlayLayer* layer, bool down, int button, bool player1);
 
@@ -24,6 +30,8 @@ private:
     bool m_wasEnabled = false;
     std::string m_error;
     double m_tickRate = 240.0;
+    bool m_needsRestart = false;
+    std::string m_macroName;
 };
 
 }

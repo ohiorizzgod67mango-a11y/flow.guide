@@ -10,7 +10,7 @@ if (APPLE AND NOT IOS AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
     set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64")
 endif()
 
-project(FlowAssist VERSION 0.1.0)
+project(FlowAssist VERSION 0.1.1)
 
 include($ENV{GEODE_SDK}/cmake/CPM.cmake)
 

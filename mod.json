@@ -5,7 +5,7 @@
     },
     "id": "geekedgdplayer.flow-assist",
     "name": "Flow Assist",
-    "version": "v0.1.0",
+    "version": "v0.1.1",
     "developer": "GeekedGDPlayer",
     "description": "Macro guided early input assistance for practice",
     "tags": [
@@ -24,7 +24,7 @@
             "type": "file",
             "default": "Pick a macro file",
             "name": "Reference macro",
-            "description": "Choose before entering the level, reenter after changing files"
+            "description": "Choose a reference macro, or use the flow button in the pause menu"
         },
         "assist-frames": {
             "type": "int",
