@@ -1,0 +1,22 @@
+name: Windows alpha
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  engine:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tools/check-comments.py
+      - run: g++ -std=c++23 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc tests/TimingAssistTest.cpp src/engine/TimingAssist.cpp -o timing-tests
+      - run: ./timing-tests
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: geode-sdk/build-geode-mod@main
+        with:
+          target: Win64
+          sdk: v5.8.2
+          build-config: Release

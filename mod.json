@@ -1,0 +1,46 @@
+{
+    "geode": "5.8.2",
+    "gd": {
+        "win": "2.2081"
+    },
+    "id": "geekedgdplayer.flow-assist",
+    "name": "Flow Assist",
+    "version": "v0.1.0",
+    "developer": "GeekedGDPlayer",
+    "description": "Macro guided early input assistance for practice",
+    "tags": [
+        "gameplay",
+        "cheat",
+        "offline"
+    ],
+    "settings": {
+        "enabled": {
+            "type": "bool",
+            "default": true,
+            "name": "Enable assistance",
+            "description": "Only active in practice mode, never plays inputs without your matching action"
+        },
+        "macro-file": {
+            "type": "file",
+            "default": "Pick a macro file",
+            "name": "Reference macro",
+            "description": "Choose before entering the level, reenter after changing files"
+        },
+        "assist-frames": {
+            "type": "int",
+            "default": 3,
+            "min": 0,
+            "max": 6,
+            "name": "Early window in macro frames",
+            "description": "3 at 240 fps is 12.5 ms, 0 disables timing shifts"
+        },
+        "offset-seconds": {
+            "type": "float",
+            "default": 0.0,
+            "min": -3600.0,
+            "max": 3600.0,
+            "name": "Macro offset in seconds",
+            "description": "Positive moves macro targets later, use only when macro and level clocks differ"
+        }
+    }
+}
