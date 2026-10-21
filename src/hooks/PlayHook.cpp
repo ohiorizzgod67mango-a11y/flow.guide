@@ -15,6 +15,11 @@ struct FlowPlayHook : Modify<FlowPlayHook, PlayLayer> {
         flow::Session::get().reset(this);
     }
 
+    void postUpdate(float dt) {
+        PlayLayer::postUpdate(dt);
+        flow::Session::get().drawHud(this);
+    }
+
     void onQuit() {
         flow::Session::get().detach();
         PlayLayer::onQuit();

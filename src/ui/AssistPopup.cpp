@@ -23,7 +23,7 @@ AssistPopup* AssistPopup::create() {
 }
 
 bool AssistPopup::init() {
-    if (!Popup::init(410.f, 300.f, "GJ_square01.png")) return false;
+    if (!Popup::init(410.f, 330.f, "GJ_square01.png")) return false;
     setTitle("flow assist", "goldFont.fnt", 0.9f);
     auto label = [this](float y, float scale) {
         auto* node = CCLabelBMFont::create("", "bigFont.fnt");
@@ -42,6 +42,7 @@ bool AssistPopup::init() {
     m_controls = CCMenu::create();
     m_controls->setPosition({0.f, 0.f});
     m_mainLayer->addChild(m_controls);
+    addButton("toggle click lines", 205.f, 279.f, menu_selector(AssistPopup::onIndicators));
     addButton("choose macro", 205.f, 216.f, menu_selector(AssistPopup::onChoose));
     addButton("toggle", 335.f, 185.f, menu_selector(AssistPopup::onToggle));
     addButton("-", 62.f, 145.f, menu_selector(AssistPopup::onFrames), -1);
@@ -49,6 +50,7 @@ bool AssistPopup::init() {
     addButton("-5ms", 80.f, 64.f, menu_selector(AssistPopup::onOffset), -1);
     addButton("zero offset", 205.f, 64.f, menu_selector(AssistPopup::onOffset), 0);
     addButton("+5ms", 330.f, 64.f, menu_selector(AssistPopup::onOffset), 1);
+    m_diagnostic = label(13.f, 0.18f);
     refresh();
     return true;
 }
@@ -64,6 +66,9 @@ void AssistPopup::addButton(char const* text, float x, float y, SEL_MenuHandler 
 
 void AssistPopup::refresh() {
     auto* mod = Mod::get();
+    std::string lineState = mod->getSettingValue<bool>("show-click-lines") ? "lines on | " : "lines off | ";
+    m_diagnostic->setString((lineState + Session::get().diagnosticSummary()).c_str());
+    m_diagnostic->limitLabelWidth(380.f, 0.18f, 0.12f);
     m_macro->setString(Session::get().description().c_str());
     m_macro->limitLabelWidth(370.f, 0.32f, 0.15f);
     m_state->setString(mod->getSettingValue<bool>("enabled") ? "assistance on" : "assistance off");
@@ -100,6 +105,12 @@ void AssistPopup::onChoose(CCObject*) {
     });
 }
 
+void AssistPopup::onIndicators(CCObject*) {
+    auto* mod = Mod::get();
+    mod->setSettingValue<bool>("show-click-lines", !mod->getSettingValue<bool>("show-click-lines"));
+    refresh();
+}
+
 void AssistPopup::onToggle(CCObject*) {
     auto* mod = Mod::get();
     Session::get().cancelPending();
@@ -121,7 +132,7 @@ void AssistPopup::onOffset(CCObject* sender) {
     auto tag = static_cast<CCNode*>(sender)->getTag();
     auto value = mod->getSettingValue<double>("offset-seconds");
     value = tag == 0 ? 0.0 : std::clamp(value + tag * 0.005, -3600.0, 3600.0);
-    Session::get().cancelPending();
+    if (value != mod->getSettingValue<double>("offset-seconds")) Session::get().requireRestart();
     mod->setSettingValue<double>("offset-seconds", value);
     refresh();
 }

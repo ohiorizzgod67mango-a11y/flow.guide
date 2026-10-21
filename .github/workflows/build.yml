@@ -11,6 +11,10 @@ jobs:
       - run: python3 tools/check-comments.py
       - run: g++ -std=c++23 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc tests/TimingAssistTest.cpp src/engine/TimingAssist.cpp -o timing-tests
       - run: ./timing-tests
+      - name: Test indicator timeline
+        run: g++ -std=c++23 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc tests/IndicatorTimelineTest.cpp src/render/IndicatorTimeline.cpp -o indicator-tests && ./indicator-tests
+      - name: Test workshop native bridge
+        run: python3 workshop/api-test.py
   build:
     runs-on: windows-latest
     steps:

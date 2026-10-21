@@ -1,93 +1,94 @@
-# flow assist v0.1.1 source alpha
+# flow assist v0.1.3 source alpha
 
-macro guided input assistance for geometry dash practice
+macro guided early input assistance, with an input reliability rework and a playable test workshop
 
-## what it does
+## thin click lines
 
-- you supply a reference macro and still play the level yourself
-- early presses and releases within the selected window wait for their macro targets
-- default window is 3 macro frames, 12.5 ms for a 240 fps macro
-- player 1 and player 2 have separate targets, as do the three button channels
-- no matching physical input means no assisted action
-- late and out of window inputs pass through, they are not retroactively fixed
-- assistance only runs in practice mode, normal mode inputs pass through
-- a visible label shows whether assistance is active and counts early corrections
+upcoming macro jump presses now draw as thin vertical lines in the actual mod, green for player 1 and orange for player 2
 
-## pause menu gui
+pause and click flow, choose a macro and restart the attempt, the toggle click lines button controls the overlay independently of assistance
+
+lines work with assistance off and in normal mode, they do not press inputs
+
+default width is one level unit, adjust click line width and click line lookahead in geode settings
+
+markers use the same macro offset as assistance, horizontal positions come from posForTime and vertical lines are centred on the players current height
+
+they are timing references, not predicted landing positions, wave trajectories or safe collision windows
+
+at most 512 upcoming markers are drawn per update
+
+the timeline selection tests pass locally, actual rendering still needs a geode build and gd test
+
+## current status
+
+the previous build loaded in gd but made normal gameplay worse in your testing
+
+this patch fixes reproduced scheduler regressions, the new gd adapter has not been compiled or tested in game
+
+no late correction, rollback or automatic macro playback is included
+
+## corrected input policy
+
+an early jump press inside the selected window waits for the matching macro press
+
+its release follows the same delay, preserving your physical hold duration instead of independently snapping to a macro release
+
+queued press and release transitions cannot both drain on one simulation timestamp
+
+when a queued press is delivered late, its paired release moves by that extra delay too
+
+holds may gain up to one physics tick from rounding in the tested nonoverlapping cases, congested input bursts can gain more because order is preserved
+
+this does not reproduce the macros release timing, it preserves your own holds, that tradeoff is deliberate
+
+buttons 2 and 3 pass through without macro snapping
+
+late and out of window presses pass through
+
+## pause menu
 
 pause a level and click flow
 
-choose macro opens the native file picker, successful loads are remembered
+choose a local macro, restart the attempt to apply it, then use practice mode
 
-invalid files show an error and keep your previous macro
+use toggle to enable assistance, the frame control adjusts the early press window from 0 to 6 macro frames
 
-use toggle to enable or disable assistance, plus and minus adjust the 0 to 6 frame window
+new installs default to assistance off, existing settings can retain their previous value
 
-macro offset controls move the target timeline in 5 ms steps, zero offset restores the default
+0 frames is a bypass, the offset control moves the reference timeline in 5 ms steps and requires restarting the attempt when changed
 
-loading a different macro clears pending events and requires restarting the attempt before assistance becomes active, use the normal restart control after closing the popup
+keep offset at zero unless a clock mismatch is verified
 
-changing the toggle, window or offset clears pending inputs and releases buttons to prevent old queued actions carrying over
+changing settings cancels queued assistance and reconciles only channels whose output state differs from physical state, it no longer sends six unconditional releases
 
-the popup shows the loaded filename, effective early window in milliseconds and current offset
+switching off while a key is held can emit a state synchronization edge, after that transition bypass preserves physical events unchanged
 
-## first use after building
+## diagnostics
 
-1 enter a level, pause and click flow
-2 choose a matching macro and leave the early window at 3 frames
-3 close the popup, switch to practice mode and restart the attempt
-4 play normally, start with clicks slightly early rather than late
-5 try 1 frame for lighter assistance or 6 for a wider window
+the hud shows corrected press count, pending input count and the last measured queued delivery delay
 
-the pause menu picker loads in the current level, changes made through the separate geode settings file control still require reentering the level
+the pause popup shows the last routing decision and queue information
 
-frames mean macro frames, not monitor refresh frames
+timing values use the gd game state level clock, whether that hook phase matches macro frames still needs real gd verification
 
-the buffer has a hard limit of 100 ms regardless of the frame setting
+## workshop
 
-## status
+see workshop/README.md for the playable cube and wave test sandbox
 
-this is source code, not an installable geode package
+it calls this exact c++ engine through a small native bridge, not a second javascript assistance implementation
 
-the standalone timing engine was compiled locally with address and undefined behaviour sanitizers and tested against deterministic checks and 5000 randomized sequences
+its physics are simplified and original, not geometry dash physics, a successful mock course does not verify gd compatibility
 
-the v0.1.0 adapter compiled and loaded in gd according to your report, timing assistance is not yet verified in game
+## building
 
-the new v0.1.1 gui has not been compiled or tested in gd, the included windows workflow is the next build gate
+push this folder as the root of your flow.guide repository, the included windows workflow builds and uploads the .geode artifact
 
-windows gd 2.2081 and geode 5.8.2 are the only declared target for this alpha
+target is gd 2.2081 and geode 5.8.2 on windows
 
-## limitations
+this zip is source, not an installable mod
 
-this is an early input buffer, not full timing window expansion or late input correction
-
-it does not rewind, prevent collisions, predict safe paths, or guarantee that a macro completes the level
-
-short taps can become a press and release on the same simulation tick when the release arrives before a buffered press, gd handling needs testing
-
-targets use the game state level clock, checkpoint restore alignment and start positions need verification, a manual offset is available but is not a substitute for verified timing
-
-positive offset moves macro targets later in level time
-
-practice mode only prevents this mod assisting a normal mode completion, this alpha does not implement a separate progress saving or networking hook, practice progress can still be saved by gd
-
-macro files are loaded synchronously on level entry, very large files can stall loading
-
-other input and tickrate mods can conflict, start testing without them
-
-there is no level id compatibility check, use a macro for the exact level revision and physics setup
-
-pending events are capped at 64 per channel, overflow flushes that channel before passing the new input through, preserving input order rather than correction timing
-
-## build
-
-set GEODE_SDK to a geode 5.8.2 sdk checkout and use its normal windows toolchain
-
-or push this folder as the root of a new repository and run the included windows alpha workflow
-
-do not upload this over the existing click guide visualizer repository
-
-## local engine tests
+## tests
 
 ```sh
 g++ -std=c++23 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc tests/TimingAssistTest.cpp src/engine/TimingAssist.cpp -o timing-tests
@@ -95,28 +96,14 @@ g++ -std=c++23 -Wall -Wextra -Werror -fsanitize=address,undefined -Isrc tests/Ti
 python3 tools/check-comments.py
 ```
 
-## required in game checks before sharing a binary
+see TEST-REPORT.md for local results and outstanding gd checks
 
-- flow button appears in the pause menu and popup fits the screen
-- file picker cancel leaves the current macro unchanged
-- invalid file shows an error and preserves the current macro
-- successful load shows the filename, restart requirement and correct macro frame window
-- toggling, changing frame window and changing offset release held buttons without firing old queued inputs
-- closing the popup before the picker completes does not access a freed popup
-- normal mode never buffers inputs
-- assistance indicator matches actual practice state
-- early press and early release each land on the intended simulation tick
-- late inputs pass through and are never claimed as corrected
-- short taps do not leave jump held
-- dual targets do not consume one another
-- death, reset, checkpoint restore, pause, mode changes and quit do not leak pending inputs
-- 120, 240 and 360 fps macros retain their expected timing under different render rates
-- missing, invalid and incompatible files fail without affecting normal controls
+## macro readers
 
-## parser provenance
+reused from your click guide visualizer project, includes gdr, gdr2, compatible json and msgpack and the supported zbot binary layout
 
-macro readers were reused from your local click guide visualizer project
+gdr parsing uses maxnuts GDReplayFormat at the pinned CMake revision
 
-gdr parsing depends on maxnuts GDReplayFormat at the pinned revision in CMakeLists.txt
+macro files load synchronously, large files can stall loading, there is no level id compatibility guarantee
 
-supported readers include gdr, gdr2, compatible json and msgpack, and the supported zbot family binary layout, extensions alone do not guarantee compatibility
+practice mode is the runtime gate, this is not a separate save prevention or networking system

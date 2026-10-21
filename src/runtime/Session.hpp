@@ -1,6 +1,7 @@
 #pragma once
 
 #include "engine/TimingAssist.hpp"
+#include "render/ClickIndicators.hpp"
 #include <Geode/Geode.hpp>
 #include <filesystem>
 #include <string>
@@ -17,17 +18,20 @@ public:
     std::string description() const;
     double tickRate() const;
     void cancelPending();
+    void requireRestart();
     void tick(PlayLayer* layer);
+    void drawHud(PlayLayer* layer);
+    std::string diagnosticSummary() const;
     bool input(PlayLayer* layer, bool down, int button, bool player1);
 
 private:
     void dispatch(PlayLayer* layer, std::vector<Event> const& events);
     bool enabled(PlayLayer* layer) const;
     TimingAssist m_engine;
+    ClickIndicators m_indicators;
     PlayLayer* m_layer = nullptr;
     cocos2d::CCLabelBMFont* m_label = nullptr;
     bool m_dispatching = false;
-    bool m_wasEnabled = false;
     std::string m_error;
     double m_tickRate = 240.0;
     bool m_needsRestart = false;

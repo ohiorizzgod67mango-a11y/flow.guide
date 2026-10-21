@@ -2,3 +2,8 @@ build/
 .geode/
 *.geode
 timing-tests
+
+workshop/engine-native.so
+workshop/engine-tests
+workshop/*.png
+__pycache__/
